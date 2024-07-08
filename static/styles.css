@@ -1,0 +1,71 @@
+/* styles.css */
+
+body {
+    background-image: url('D:\weather app\python-weather-app-master USING WEATHERMAP API\static\BACKGROUND.png'); /* Use a relative or web-accessible path */
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+}
+
+.custom-button {
+    margin-top: 10px;
+}
+
+.location-section,
+.forecast-section {
+    background-color: rgba(255, 255, 255, 0.8);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+}
+
+.location-section {
+    margin-top: 20px;
+}
+
+.current-section,
+.forecast-section {
+    margin-top: 20px;
+}
+
+.form-container {
+    max-width: 400px;
+    margin: 0 auto;
+    text-align: center;
+    padding: 20px;
+    background-color: rgba(255, 255, 255, 0.8);
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+    margin-top: 50px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.forecast-section img {
+    width: 100px; /* Adjust the width as needed */
+    height: 100px; /* Adjust the height as needed */
+}
+
+.aqi-section p {
+    font-weight: normal; /* Reset the font weight for all paragraphs */
+}
+
+.aqi-section p.bold-particle {
+    font-weight: bold; /* Apply bold font to specific particles */
+}
+
+/* Add styles for different result types */
+.healthy {
+    color: green; /* You can customize the color for healthy particles */
+}
+
+.unhealthy {
+    color: red; /* You can customize the color for unhealthy particles */
+}
+
+/* Add more styles for other result types as needed */

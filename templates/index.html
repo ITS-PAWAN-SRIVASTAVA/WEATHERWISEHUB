@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <title>WeatherWiseHub</title>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">WeatherWiseHub</h1>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-container text-center">
+                    <form method="post">
+                        <div class="form-group">
+                            <label for="city">Enter City:</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary custom-button">Get Result</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% if weather_data %}
+            {% if 'location' in weather_data %}
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="location-section border">
+                            <h2>Location:</h2>
+                            {% if 'name' in weather_data.location %}
+                                <p>Name: {{ weather_data.location.name }}</p>
+                            {% else %}
+                                <p>Name: N/A</p>
+                            {% endif %}
+                            {% if 'country' in weather_data.location %}
+                                <p>Country: {{ weather_data.location.country }}</p>
+                            {% else %}
+                                <p>Country: N/A</p>
+                            {% endif %}
+                            {% if 'latitude' in weather_data.location %}
+                                <p>Latitude: {{ weather_data.location.latitude }}</p>
+                            {% else %}
+                                <p>Latitude: N/A</p>
+                            {% endif %}
+                            {% if 'longitude' in weather_data.location %}
+                                <p>Longitude: {{ weather_data.location.longitude }}</p>
+                            {% else %}
+                                <p>Longitude: N/A</p>
+                            {% endif %}
+                            {% if 'timezone' in weather_data.location %}
+                                <p>Timezone: {{ weather_data.location.timezone }}</p>
+                            {% else %}
+                                <p>Timezone: N/A</p>
+                            {% endif %}
+                            {% if 'localtime' in weather_data.location %}
+                                <p>Local Time: {{ weather_data.location.localtime }}</p>
+                            {% else %}
+                                <p>Local Time: N/A</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="current-section border">
+                            <h2>Current Weather:</h2>
+                            {% if 'current' in weather_data %}
+                                <p>Temperature: {{ weather_data.current.temperature }}°C</p>
+                                <p>Feels Like: {{ weather_data.current.feels_like }}°C</p>
+                                <p>Min Temperature: {{ weather_data.current.temp_min }}°C</p>
+                                <p>Max Temperature: {{ weather_data.current.temp_max }}°C</p>
+                                <p>Pressure: {{ weather_data.current.pressure }} hPa</p>
+                                <p>Humidity: {{ weather_data.current.humidity }}%</p>
+                                {% if 'weather' in weather_data %}
+                                    <p>Condition: {{ weather_data.weather.condition }}</p>
+                                    <p>Description: {{ weather_data.weather.description }}</p>
+                                {% else %}
+                                    <p>No weather information available.</p>
+                                {% endif %}
+                            {% else %}
+                                <p>No current weather information available.</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <p>No weather data available.</p>
+            {% endif %}
+
+            {% if aqi_data and 'particles' in aqi_data %}
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="forecast-section border">
+                            <h2 class="bold-section">Hourly Forecast:</h2>
+                            <div class="row">
+                                {% for forecast in hourly_forecast %}
+                                    <div class="col-md-3">
+                                        <p>{{ forecast.timestamp|timestamp_to_localtime }}</p>
+                                        <p>Temperature: {{ forecast.temperature }}°C</p>
+                                        <p>Condition: {{ forecast.condition }}</p>
+                                        <p>Description: {{ forecast.description }}</p>
+                                        <img src="{{ url_for('static', filename='icons/' + forecast.icon + '.png') }}" alt="{{ forecast.condition }}">
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+
+            {% if aqi_data %}
+                <div class="row mt-4">
+                    <div class="col-md-12">
+                        <div class="aqi-section border">
+                            <h2 class="bold-section">Air Quality Index (AQI):</h2>
+                            <p>Coord: {{ aqi_data.coord }}</p>
+                            <p>AQI: {{ aqi_data.aqi }}</p>
+                            <button class="btn btn-primary custom-button" data-toggle="modal" data-target="#airQualityScaleModal">Air Quality Scale</button>
+                            <button class="btn btn-primary custom-button" data-toggle="modal" data-target="#suggestionsModal">Suggestions</button>
+
+                            {% if 'particles' in aqi_data %}
+                                <h3 class="bold-section">Particles:</h3>
+                                {% for particle, data in aqi_data.particles.items() %}
+                                    <p id="{{ particle }}-particles">
+                                        <strong>{{ particle|capitalize }}: {{ data.index }} µg/m³ - </strong><span class="{{ data.result_type|lower }}"><strong>{{ data.health_concern }}</strong></span> - {{ data.description }}
+                                    </p>
+                                {% endfor %}
+                            {% endif %}
+
+                            {% if 'gases' in aqi_data %}
+                                <h3 class="bold-section">Gases:</h3>
+                                {% for gas, data in aqi_data.gases.items() %}
+                                    <p id="{{ gas }}-gases">{{ gas|capitalize }}: {{ data.index }} µg/m³ - {{ data.health_concern }} - {{ data.description }}</p>
+                                {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal fade" id="airQualityScaleModal" tabindex="-1" role="dialog" aria-labelledby="airQualityScaleModalLabel" aria-hidden="true">
+                    <!-- Include the content of your airqualityscale.html file here -->
+                    {% include 'airqualityscale.html' %}
+                </div>
+            {% endif %}
+
+            {% if WEATHER_PLAYLISTS %}
+                <div class="row mt-4 spotify-section">
+                    {% for category, playlists_list in WEATHER_PLAYLISTS.items() %}
+                        {% if category.lower() in weather_data.weather.condition.lower() %}
+                            <div class="col-md-4">
+                                <div class="playlist-card">
+                                    <div class="playlist-details">
+                                        <p class="mb-3">
+                                            <strong>🎵 WeatherWiseHub recommends songs for {{ weather_data.weather.condition|capitalize }} weather. 🌧️ Enjoy the playlist!</strong>
+                                        </p>
+                                        <h3 class="playlist-title">{{ category|capitalize }} Playlist</h3>
+                                        <a href="https://open.spotify.com/playlist/{{ playlists_list[0][1] }}" target="_blank" class="btn btn-primary btn-lg mt-3">Listen on Spotify</a>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            {% endif %}
+        {% endif %}
+
+        <div class="modal fade" id="suggestionsModal" tabindex="-1" role="dialog" aria-labelledby="suggestionsModalLabel" aria-hidden="true">
+            <!-- Include the content of your suggestions.html file here -->
+            {% include 'suggestions.html' %}
+        </div>
+
+        <script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+        <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+        <script>
+            $(document).ready(function () {
+                $('#showAirQualityScaleModalBtn').on('click', function () {
+                    $('#airQualityScaleModal').modal('show');
+                });
+            });
+        </script>
+    </div>
+</body>
+
+</html>

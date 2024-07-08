@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Suggestions</title>
+    <style>
+        /* Add this style block for bold and other styles */
+        .bold-section {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Suggestions for {{ city }}</h1>
+
+    {% if aqi_data %}
+        <p>AQI Level: {{ aqi_data.get('aqi') }}</p>
+
+        <h2>Suggestions:</h2>
+        <p>Category: {{ aqi_data.suggestions.Category }}</p>
+
+        <!-- Loop through all recommendations -->
+        {% set recommendations = aqi_data.suggestions.Recommendations %}
+        <ul>
+            {% for key, value in recommendations.items() %}
+                <li><span class="bold-section">{{ key }}:</span> {{ value }}</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Displaying Details if available -->
+        {% set details = aqi_data.suggestions.Details %}
+        {% if details %}
+            <h3>Details:</h3>
+            <ul>
+                {% if aqi_data.suggestions.OutdoorActivitiesDetails %}
+                    <h3>Outdoor Activities Details:</h3>
+                    <ul>
+                        {% for activity in aqi_data.suggestions.OutdoorActivitiesDetails %}
+                            <li>{{ activity }}</li>
+                        {% endfor %}
+                    </ul>
+                {% endif %}
+
+                <!-- Display ClothingRecommendations -->
+                {% if aqi_data.suggestions.ClothingRecommendations %}
+                    <h3>Clothing Recommendations:</h3>
+                    <p>{{ aqi_data.suggestions.ClothingRecommendations }}</p>
+                {% endif %}
+
+                <!-- Check for EmergencyResponse -->
+                {% if aqi_data.suggestions.EmergencyResponse %}
+                    <h3>Emergency Response:</h3>
+                    <p>{{ aqi_data.suggestions.EmergencyResponse }}</p>
+                {% endif %}
+            </ul>
+        {% endif %}
+    {% else %}
+        <p>No data available for the specified city.</p>
+    {% endif %}
+
+</body>
+
+</html>

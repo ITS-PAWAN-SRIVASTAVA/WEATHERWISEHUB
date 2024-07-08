@@ -1,0 +1,198 @@
+EXPLANANTION FOR MAKING BOLD EVERY PARTICLE NAME S AND ITS SCALE 
+
+BEFORE CHANGES CODE WAS : 
+{% if 'particles' in aqi_data %}
+                        <h3 class="bold-section">Particles:</h3>
+                            <!-- Displaying all particle details -->
+                            {% for particle, data in aqi_data.particles.items() %}
+                                <p id="{{ particle }}-particles">{{ particle|capitalize }}: {{ data.index }} µg/m³ - {{ data.health_concern }} - {{ data.description }}</p>
+                            {% endfor %}
+                        {% endif %}
+            
+ATER CHANGES: (IN HTML CONT)
+{% if 'particles' in aqi_data %}
+    <h3 class="bold-section">Particles:</h3>
+    <!-- Displaying all particle details -->
+    {% for particle, data in aqi_data.particles.items() %}
+        <p id="{{ particle }}-particles">
+            <strong>{{ particle|capitalize }}: {{ data.index }} µg/m³ - </strong><span class="{{ data.result_type|lower }}"><strong>{{ data.health_concern }}</strong></span> - {{ data.description }}
+        </p>
+    {% endfor %}
+{% endif %}
+
+(IN CSS FILES)
+ .healthy {
+    color: green; /* You can customize the color for healthy particles */
+}
+
+.unhealthy {
+    color: red; /* You can customize the color for unhealthy particles */
+}
+**************************** EXPLANANTIONS ********************************
+Introduction of <strong> Tag:
+I introduced the <strong> HTML tag, which is used to represent strong importance or emphasis. 
+In this case, we want to emphasize the particle name and its health scale.
+<strong>{{ particle|capitalize }}: {{ data.index }} µg/m³ - </strong><span class="{{ data.result_type|lower }}"><strong>{{ data.health_concern }}</strong></span> - {{ data.description }}
+
+Placement of <strong> Tag:
+I placed the <strong> tag around the particle name ({{ particle|capitalize }}) and the health scale ({{ data.health_concern }}). 
+This ensures that only these elements will be displayed in bold.
+
+Combination with <span> Tag:
+I used the <span> tag to apply different styles to the health scale based on its result type. 
+The <span> tag is responsible for styling the health scale, while the <strong> tag remains responsible for 
+making both the particle name and the health scale bold.
+<strong>{{ particle|capitalize }}: {{ data.index }} µg/m³ - </strong><span class="{{ data.result_type|lower }}"><strong>{{ data.health_concern }}</strong></span> - {{ data.description }}
+
+CSS Styling:
+
+You can further customize the styling by adding CSS rules for each result 
+type (e.g., "good," "unhealthy") in your stylesheet. For example
+.good {
+    /* Add your styles for the "Good" result type here */
+}
+.unhealthy {
+    /* Add your styles for the "Unhealthy" result type here */
+}
+Adjust the styles in your CSS file based on how you want each result type to appear.
+
+ used the existing {{ particle|capitalize }} and {{ data.health_concern }} in the code. Let me break down what these expressions do:
+
+{{ particle|capitalize }}:
+This expression takes the value of the particle variable and applies the capitalize filter to it.
+The capitalize filter capitalizes the first letter of the string and makes the rest of the characters lowercase.
+For example, if particle is "pm2_5," {{ particle|capitalize }} would render as "Pm2_5."
+
+{{ data.health_concern }}:
+This expression simply retrieves the value of the health_concern property from the data dictionary.
+For example, if data.health_concern is "Unhealthy," {{ data.health_concern }} would render as "Unhealthy."
+In the modified code, I wrapped these expressions with the <strong> tag to make both the capitalized particle name and the health concern bold.
+<strong>{{ particle|capitalize }}: {{ data.index }} µg/m³ - </strong><span class="{{ data.result_type|lower }}"><strong>{{ data.health_concern }}</strong></span> - {{ data.description }}
+This way, both the particle name (e.g., "Pm2_5") and its health concern (e.g., "Unhealthy") are now bold in the output. I hope this clarifies the usage of these expressions. If you have any more questions, feel free to ask!
+
+
+I used the existing term {{ data.health_concern }} in the code. This term is part of the data structure or dictionary (data) that you're iterating over in your template. The {{ data.health_concern }} expression retrieves the value associated with the key health_concern in the data dictionary.
+
+Here's the relevant part of the code:<strong>{{ particle|capitalize }}: {{ data.index }} µg/m³ - </strong><span class="{{ data.result_type|lower }}"><strong>{{ data.health_concern }}</strong></span> - {{ data.description }}
+In this code snippet, {{ data.health_concern }} is referencing the health_concern attribute of the data dictionary for the current iteration. It displays the health concern associated with the particle.
+
+For example, if your data structure for a particular particle looks like this:{
+    "index": 161.61,
+    "result_type": "Unhealthy",
+    "health_concern": "Fine Particulate Matter are inhalable pollutant particles with a diameter less than 2.5 micrometers that can enter the lungs and bloodstream, resulting in serious health issues. The most severe impacts are on the lungs and heart. Exposure can result in coughing or difficulty breathing, aggravated asthma, and the development of chronic respiratory disease."
+    "description": "Some additional details about the particle."
+}
+Then {{ data.health_concern }} would display the content associated with the health_concern key in your template.
+
+I hope this clarifies it for you. If you have further questions, feel free to ask!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+INCLUDING HISTORICAL DATA BEFORE IN PYTHON CODE :
+ 
+def get_hourly_forecast(latitude, longitude):
+    base_url = "https://api.openweathermap.org/data/2.5/forecast"
+    params = {
+        'lat': latitude,
+        'lon': longitude,
+        'appid': OPENWEATHERMAP_API_KEY,
+        'units': 'metric'
+    }
+
+    response = requests.get(url=base_url, params=params)
+    data = response.json()
+
+    if response.status_code == 200:
+        # Extract relevant information from the forecast data
+        hourly_forecast = []
+        for forecast in data.get('list', []):
+            hourly_forecast.append({
+                'timestamp': forecast['dt'],
+                'temperature': forecast['main']['temp'],
+                'condition': forecast['weather'][0]['main'],
+                'description': forecast['weather'][0]['description'],
+                'icon': forecast['weather'][0]['icon']
+            })
+
+        return hourly_forecast
+    else:
+        return None
+
+
+ AFTER :
+ def get_weather_and_history(latitude, longitude):
+    base_url = "http://api.openweathermap.org/data/2.5/onecall"
+    params = {
+        'lat': latitude,
+        'lon': longitude,
+        'exclude': 'minutely,daily',
+        'appid': OPENWEATHERMAP_API_KEY,
+        'units': 'metric'
+    }
+
+    response = requests.get(url=base_url, params=params)
+    data = response.json()
+
+    if response.status_code == 200:
+        # Extract relevant information from the current weather data
+        current_weather = {
+            'temperature': data['current']['temp'],
+            'feels_like': data['current']['feels_like'],
+            'condition': data['current']['weather'][0]['main'],
+            'description': data['current']['weather'][0]['description'],
+            'icon': data['current']['weather'][0]['icon']
+        }
+
+        # Extract relevant information from the hourly forecast (historical data)
+        hourly_forecast = []
+        for forecast in data.get('hourly', []):
+            hourly_forecast.append({
+                'timestamp': forecast['dt'],
+                'temperature': forecast['temp'],
+                'condition': forecast['weather'][0]['main'],
+                'description': forecast['weather'][0]['description'],
+                'icon': forecast['weather'][0]['icon']
+            })
+
+        return current_weather, hourly_forecast
+    else:
+        return None, None
+
+# ...
+
+@app.route('/', methods=['GET', 'POST'])
+def index():
+    city = None
+    current_weather = None
+    aqi_data = None
+    hourly_forecast = None
+
+    if request.method == 'POST':
+        city = request.form['city']
+        coordinates = get_coordinates(city)
+
+        if coordinates:
+            latitude, longitude = coordinates
+            current_weather, hourly_forecast = get_weather_and_history(latitude, longitude)
+            aqi_data = get_air_quality(latitude, longitude)
+
+    return render_template('index.html', city=city, current_weather=current_weather, aqi_data=aqi_data, hourly_forecast=hourly_forecast)
+HERE In this modification, I combined the current weather data and the hourly forecast (historical data) into a single function called get_weather_and_history. The get_weather_and_history function now returns both the current weather and the historical data. In the index route, the template is then rendered with both the current weather (current_weather) and the historical data (hourly_forecast).
+ You can update your index.html template to display both sets of data accordingly.
+
+
+
+

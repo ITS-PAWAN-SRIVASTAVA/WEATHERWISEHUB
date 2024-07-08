@@ -1,0 +1,277 @@
+<!-- index.html -->
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='styles.css') }}">
+    <style>
+          .bold-section {
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        .forecast-section {
+            margin-top: 20px;
+        }
+
+        .border {
+            border: 1px solid #ccc;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+        }
+
+        .custom-button {
+            margin-top: 10px;
+        }
+
+        #airQualityScaleModalLabel,
+        #suggestionsModalLabel {
+            color: #007bff;
+        }
+
+        .spotify-section {
+            margin-top: 20px;
+        }
+
+        .playlist-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            margin: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s;
+        }
+
+        .playlist-card:hover {
+            transform: scale(1.05);
+        }
+
+        .playlist-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+        }
+
+        .playlist-details {
+            padding: 15px;
+        }
+
+        .playlist-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+
+        .playlist-link {
+            display: block;
+            color: #007bff;
+            text-decoration: none;
+            font-weight: bold;
+        }
+    </style>
+    <title>WeatherWiseHub</title>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <h1 class="text-center mb-4">WeatherWiseHub</h1>
+
+        <div class="row">
+            <div class="col-md-12">
+                <div class="form-container text-center">
+                    <form method="post">
+                        <div class="form-group">
+                            <label for="city">Enter City:</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary custom-button">Get Result</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        {% if weather_data %}
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="location-section border">
+                        <h2>Location:</h2>
+                        <!-- Displaying location information -->
+                        <p>Name: {{ weather_data.location.name }}</p>
+                        <p>Country: {{ weather_data.location.country }}</p>
+                        <p>Latitude: {{ weather_data.location.latitude }}</p>
+                        <p>Longitude: {{ weather_data.location.longitude }}</p>
+                        <p>Timezone: {{ weather_data.location.timezone }}</p>
+                        <p>Local Time: {{ weather_data.location.localtime }}</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="current-section border">
+                        <h2>Current Weather:</h2>
+                        <!-- Displaying current weather information -->
+                        <p>Temperature: {{ weather_data.current.temperature }}°C</p>
+                        <p>Feels Like: {{ weather_data.current.feels_like }}°C</p>
+                        <p>Min Temperature: {{ weather_data.current.temp_min }}°C</p>
+                        <p>Max Temperature: {{ weather_data.current.temp_max }}°C</p>
+                        <p>Pressure: {{ weather_data.current.pressure }} hPa</p>
+                        <p>Humidity: {{ weather_data.current.humidity }}%</p>
+                        <p>Condition: {{ weather_data.weather.condition }}</p>
+                        <p>Description: {{ weather_data.weather.description }}</p>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
+        {% if hourly_forecast %}
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="forecast-section border">
+                    <h2 class="bold-section">Hourly Forecast:</h2>
+                    <div class="row">
+                        {% for forecast in hourly_forecast %}
+                            <div class="col-md-3">
+                                <p>{{ forecast.timestamp|timestamp_to_localtime }}</p>
+
+                                <p>Temperature: {{ forecast.temperature }}°C</p>
+                                <p>Condition: {{ forecast.condition }}</p>
+                                <p>Description: {{ forecast.description }}</p>
+                                <img src="{{ url_for('static', filename='icons/' + forecast.icon + '.png') }}" alt="{{ forecast.condition }}">
+                            </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+    
+        {% if aqi_data %}
+        <div class="row mt-4">
+            <div class="col-md-12">
+                <div class="aqi-section border">
+                    <h2 class="bold-section">Air Quality Index (AQI):</h2>
+                        <!-- Displaying AQI information -->
+                        <p>Coord: {{ aqi_data.coord }}</p>
+                        <p>AQI: {{ aqi_data.aqi }}</p>
+
+                        <!-- Add the button for the air quality scale -->
+                        <button class="btn btn-primary custom-button" data-toggle="modal" data-target="#airQualityScaleModal">Air Quality Scale</button>
+                        <!-- Add a button for suggestions -->
+                        <button class="btn btn-primary custom-button" data-toggle="modal" data-target="#suggestionsModal">Suggestions</button>
+
+                        {% if 'particles' in aqi_data %}
+                        <h3 class="bold-section">Particles:</h3>
+                        <!-- Displaying all particle details -->
+                        {% for particle, data in aqi_data.particles.items() %}
+                            <p id="{{ particle }}-particles">
+                                <strong>{{ particle|capitalize }}: {{ data.index }} µg/m³ - </strong><span class="{{ data.result_type|lower }}"><strong>{{ data.health_concern }}</strong></span> - {{ data.description }}
+                            </p>
+                        {% endfor %}
+                    {% endif %}
+
+                        {% if 'gases' in aqi_data %}
+                        <h3 class="bold-section">Gases:</h3>
+                            <!-- Displaying all gas details -->
+                            {% for gas, data in aqi_data.gases.items() %}
+                                <p id="{{ gas }}-gases">{{ gas|capitalize }}: {{ data.index }} µg/m³ - {{ data.health_concern }} - {{ data.description }}</p>
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        
+
+       <!-- Modal for Air Quality Scale -->
+       <div class="modal fade" id="airQualityScaleModal" tabindex="-1" role="dialog" aria-labelledby="airQualityScaleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="airQualityScaleModalLabel">Air Quality Scale</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <!-- Include the content of your airqualityscale.html file here -->
+                    {% include 'airqualityscale.html' %}
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+{% if WEATHER_PLAYLISTS %}
+    <div class="row mt-4 spotify-section">
+        <div class="col-md-12">
+            <h2 class="bold-section text-center">Spotify Playlists</h2>
+            <div class="row justify-content-center">
+                {% for category, playlists_list in WEATHER_PLAYLISTS.items() %}
+                    {% if category.lower() in weather_data.weather.condition.lower() %}
+                        <div class="col-md-4">
+                            <div class="playlist-card">
+                                <div class="playlist-details">
+                                    <h3 class="playlist-title">{{ category|capitalize }}</h3>
+                                    
+                                    <!-- Add a button to redirect to Spotify using the stored URI -->
+                                    <a href="https://open.spotify.com/playlist/{{ playlists_list[0][1] }}" target="_blank" class="btn btn-primary">Listen on Spotify</a>
+                                </div>
+                            </div>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+{% endif %}
+
+
+
+        <!-- Modal for Suggestions -->
+<div class="modal fade" id="suggestionsModal" tabindex="-1" role="dialog" aria-labelledby="suggestionsModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="suggestionsModalLabel">Suggestions</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Include the content of your suggestions.html file here -->
+                {% include 'suggestions.html' %}
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</div>
+<!-- Remove the unnecessary script -->
+<!-- Use the full version of jQuery -->
+<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+
+<!-- Other scripts remain the same -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.9.2/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script>
+    // Wait for the DOM to be ready
+    $(document).ready(function () {
+        // Add an event listener to show the modal when the button is clicked
+        $('#showAirQualityScaleModalBtn').on('click', function () {
+            $('#airQualityScaleModal').modal('show');
+        });
+    });
+</script>
+
+</body>
+
+</html>
+
+working succesfully 
